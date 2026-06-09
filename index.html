@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Java + VS Code Knowledge Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
+%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E
+%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' d='M4 6h16M4 12h10M4 18h7'/%3E
+%3C/svg%3E">
+
+<style>
+/* ===========================
+   ROOT VARIABLES
+   =========================== */
+:root {
+    --bg: #020617;
+    --panel: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --text-soft: #9ca3af;
+    --radius: 14px;
+
+    --home: #6366f1;
+    --basics: #f59e0b;
+    --syntax: #22c55e;
+    --oop: #a855f7;
+    --debug: #ef4444;
+    --tools: #6b7280;
+    --advanced: #3b82f6;
+    --cheats: #10b981;
+    --interview: #ec4899;
+
+    --transition-speed: 0.45s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #020617 100%);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* ===========================
+   NAVIGATION
+   =========================== */
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 10px 18px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+nav button {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 7px 14px;
+    border-radius: 999px;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: 0.25s ease;
+    white-space: nowrap;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+nav button svg {
+    width: 18px;
+    height: 18px;
+}
+
+nav button.active {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(129, 140, 248, 0.7);
+    color: var(--text);
+}
+
+/* ===========================
+   PAGE CONTAINERS
+   =========================== */
+.page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 22px 18px 40px;
+    min-height: calc(100vh - 60px);
+    display: none;
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(10px);
+    overflow: hidden;
+}
+
+.page.active {
+    display: block;
+    animation: fadeIn var(--transition-speed) ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; filter: blur(10px); transform: scale(0.97); }
+    to   { opacity: 1; filter: blur(0);    transform: scale(1); }
+}
+
+/* ===========================
+   BANNERS
+   =========================== */
+.banner {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(148,163,184,0.25);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.banner svg {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+}
+
+.banner-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.banner-sub {
+    font-size: 13px;
+    color: var(--text-soft);
+}
+
+/* ===========================
+   SECTION BUTTONS
+   =========================== */
+.section-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.section-btn {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid rgba(148,163,184,0.35);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    font-size: 14px;
+}
+
+.section-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(148,163,184,0.7);
+}
+
+.section-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* ===========================
+   CODE BLOCKS
+   =========================== */
+pre {
+    background: #020617;
+    padding: 12px;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    font-size: 13px;
+    border: 1px solid rgba(148,163,184,0.45);
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+code { font-family: "Fira Code", monospace; }
+
+.code-keyword { color: #a855f7; }
+.code-type    { color: #22c55e; }
+.code-string  { color: #38bdf8; }
+.code-number  { color: #f97316; }
+.code-comment { color: #6b7280; font-style: italic; }
+
+.code-title {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-top: 8px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ===========================
+   MODAL SYSTEM
+   =========================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.85);
+    backdrop-filter: blur(18px);
+    display: none;
+    opacity: 0;
+    z-index: 50;
+}
+
+.modal-overlay.active {
+    display: block;
+    animation: modalFade var(--transition-speed) ease forwards;
+}
+
+@keyframes modalFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    position: absolute;
+    inset: 0;
+    padding: 18px 18px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.modal-back {
+    background: transparent;
+    border: 1px solid rgba(148,163,184,0.6);
+    border-radius: 999px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--text-soft);
+    font-size: 13px;
+}
+
+.modal-back svg {
+    width: 18px;
+    height: 18px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-body {
+    margin-top: 8px;
+    background: var(--panel);
+    border-radius: var(--radius);
+    border: 1px solid rgba(148,163,184,0.45);
+    padding: 16px 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+    font-size: 14px;
+}
+
+/* ===========================
+   DOCS STYLE
+   =========================== */
+.modal-body h2 {
+    font-size: 16px;
+    margin: 14px 0 6px;
+    font-weight: 600;
+}
+
+.modal-body h3 {
+    font-size: 14px;
+    margin: 10px 0 4px;
+    font-weight: 600;
+    color: var(--text-soft);
+}
+
+.modal-body hr {
+    border: none;
+    border-top: 1px solid rgba(148,163,184,0.35);
+    margin: 12px 0;
+}
+
+.modal-body ul, .modal-body ol {
+    margin: 6px 0 6px 18px;
+}
+
+.modal-body li {
+    margin-bottom: 4px;
+}
+
+/* ===========================
+   TOC
+   =========================== */
+.toc {
+    margin: 6px 0 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(15,23,42,0.8);
+    border: 1px solid rgba(148,163,184,0.45);
+}
+
+.toc a {
+    color: var(--text-soft);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.toc a:hover {
+    text-decoration: underline;
+}
+
+/* ===========================
+   CALLOUTS
+   =========================== */
+.callout {
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin: 10px 0;
+    background: rgba(15,23,42,0.7);
+    border: 1px solid rgba(148,163,184,0.6);
+    font-size: 13px;
+}
+
+.callout.tip { border-color: #3b82f6; }
+.callout.note { border-color: #9ca3af; }
+.callout.warning { border-color: #facc15; }
+.callout.error { border-color: #ef4444; }
+
+/* ===========================
+   FOOTER
+   =========================== */
+.footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--text-soft);
+    text-align: center;
+    opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===========================
+     NAVIGATION BAR
+     =========================== -->
+<nav>
+    <button class="active" data-page="home">
+        <svg stroke="var(--home)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M3 12l9-9 9 9M4 10v10h6V14h4v6h6V10"/>
+        </svg>
+        Home
+    </button>
+
+    <button data-page="basics">
+        <svg stroke="var(--basics)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M12 6v12m6-6H6"/>
+        </svg>
+        Basics
+    </button>
+
+    <button data-page="syntax">
+        <svg stroke="var(--syntax)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>
+        </svg>
+        Syntax
+    </button>
+
+    <button data-page="oop">
+        <svg stroke="var(--oop)" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke-width="2"/>
+            <path stroke-width="2" d="M19.4 15a8 8 0 10-14.8 0"/>
+        </svg>
+        OOP
+    </button>
+
+    <button data-page="debug">
+        <svg stroke="var(--debug)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M12 3v18m9-9H3"/>
+        </svg>
+        Debug
+    </button>
+
+    <button data-page="tools">
+        <svg stroke="var(--tools)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M9 12h6m-3-3v6m8-3a8 8 0 11-16 0 8 8 0 0116 0z"/>
+        </svg>
+        Tools
+    </button>
+
+    <button data-page="advanced">
+        <svg stroke="var(--advanced)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        Advanced
+    </button>
+
+    <button data-page="cheats">
+        <svg stroke="var(--cheats)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M5 7h14M5 12h10M5 17h7"/>
+        </svg>
+        Cheat Sheets
+    </button>
+
+    <button data-page="interview">
+        <svg stroke="var(--interview)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M6 6h12v12H6z"/>
+        </svg>
+        Interview Qs
+    </button>
+</nav>
+<!-- ===========================
+     HOME PAGE
+     =========================== -->
+<section id="home" class="page active">
+    <div class="banner">
+        <svg stroke="var(--home)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M3 12l9-9 9 9M4 10v10h6V14h4v6h6V10"/>
+        </svg>
+        <div>
+            <div class="banner-title">Java + VS Code Knowledge Center</div>
+            <div class="banner-sub">Structured, dense, professional documentation for your Java journey.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="home-overview">
+            <svg stroke="var(--home)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M4 6h16M4 12h10M4 18h7"/>
+            </svg>
+            <span>Overview & Documentation Style</span>
+        </div>
+
+        <div class="section-btn" data-modal="home-roadmap">
+            <svg stroke="var(--home)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M5 5h4v4H5zM10 10h4v4h-4zM15 15h4v4h-4z"/>
+            </svg>
+            <span>Learning Roadmap (Beginner → Advanced)</span>
+        </div>
+    </div>
+
+    <div class="footer">Java Knowledge Center • Built by Kenneth</div>
+</section>
+
+<!-- ===========================
+     BASICS PAGE
+     =========================== -->
+<section id="basics" class="page">
+    <div class="banner">
+        <svg stroke="var(--basics)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M12 6v12m6-6H6"/>
+        </svg>
+        <div>
+            <div class="banner-title">Java Basics</div>
+            <div class="banner-sub">Language overview, types, operators, control flow.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="basics-what-is-java">
+            <svg stroke="var(--basics)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M4 6h16v12H4z"/>
+            </svg>
+            <span>What Java Is & How It Runs</span>
+        </div>
+
+        <div class="section-btn" data-modal="basics-variables">
+            <svg stroke="var(--basics)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M12 4v16M6 8h6M6 12h6M6 16h6"/>
+            </svg>
+            <span>Variables, Types & Operators</span>
+        </div>
+
+        <div class="section-btn" data-modal="basics-control-flow">
+            <svg stroke="var(--basics)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 6h12M6 12h8M6 18h4"/>
+            </svg>
+            <span>If, Else, Switch & Loops</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     SYNTAX PAGE
+     =========================== -->
+<section id="syntax" class="page">
+    <div class="banner">
+        <svg stroke="var(--syntax)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>
+        </svg>
+        <div>
+            <div class="banner-title">Java Syntax</div>
+            <div class="banner-sub">Methods, classes, generics, collections, streams.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="syntax-methods">
+            <svg stroke="var(--syntax)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M5 7h14M5 12h10M5 17h7"/>
+            </svg>
+            <span>Methods & Parameters</span>
+        </div>
+
+        <div class="section-btn" data-modal="syntax-classes">
+            <svg stroke="var(--syntax)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 5h12v14H6z"/>
+            </svg>
+            <span>Classes, Constructors & Objects</span>
+        </div>
+
+        <div class="section-btn" data-modal="syntax-collections">
+            <svg stroke="var(--syntax)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M5 7h4v4H5zM10 7h4v4h-4zM15 7h4v4h-4z"/>
+            </svg>
+            <span>Collections, Generics & Streams</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     OOP PAGE
+     =========================== -->
+<section id="oop" class="page">
+    <div class="banner">
+        <svg stroke="var(--oop)" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke-width="2"/>
+            <path stroke-width="2" d="M19.4 15a8 8 0 10-14.8 0"/>
+        </svg>
+        <div>
+            <div class="banner-title">Object‑Oriented Programming</div>
+            <div class="banner-sub">Encapsulation, inheritance, polymorphism, interfaces, abstract classes.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="oop-encapsulation">
+            <svg stroke="var(--oop)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 6h12v12H6z"/>
+            </svg>
+            <span>Encapsulation & Access Modifiers</span>
+        </div>
+
+        <div class="section-btn" data-modal="oop-inheritance">
+            <svg stroke="var(--oop)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M8 7h8v4H8zM6 15h5v4H6zM13 15h5v4h-5z"/>
+            </svg>
+            <span>Inheritance & Class Hierarchies</span>
+        </div>
+
+        <div class="section-btn" data-modal="oop-polymorphism">
+            <svg stroke="var(--oop)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 7h12M6 12h10M6 17h8"/>
+            </svg>
+            <span>Polymorphism, Interfaces & Abstract Classes</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     DEBUG PAGE
+     =========================== -->
+<section id="debug" class="page">
+    <div class="banner">
+        <svg stroke="var(--debug)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M12 3v18m9-9H3"/>
+        </svg>
+        <div>
+            <div class="banner-title">Debugging</div>
+            <div class="banner-sub">Breakpoints, stepping, logging, exceptions, common bugs.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="debug-breakpoints">
+            <svg stroke="var(--debug)" fill="none" viewBox="0 0 24 24">
+                <circle cx="8" cy="8" r="3" stroke-width="2"/>
+                <path stroke-width="2" d="M5 16h14"/>
+            </svg>
+            <span>Breakpoints, Stepping & Watches</span>
+        </div>
+
+        <div class="section-btn" data-modal="debug-exceptions">
+            <svg stroke="var(--debug)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M12 5l7 14H5z"/>
+            </svg>
+            <span>Exceptions, Stack Traces & Error Patterns</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     TOOLS PAGE
+     =========================== -->
+<section id="tools" class="page">
+    <div class="banner">
+        <svg stroke="var(--tools)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M9 12h6m-3-3v6m8-3a8 8 0 11-16 0 8 8 0 0116 0z"/>
+        </svg>
+        <div>
+            <div class="banner-title">Tools</div>
+            <div class="banner-sub">VS Code, Maven, Gradle, Git, testing.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="tools-vscode">
+            <svg stroke="var(--tools)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 6l12 6-12 6z"/>
+            </svg>
+            <span>VS Code Setup & Workflow</span>
+        </div>
+
+        <div class="section-btn" data-modal="tools-maven">
+            <svg stroke="var(--tools)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M5 7h14v10H5z"/>
+            </svg>
+            <span>Maven & Gradle Basics</span>
+        </div>
+
+        <div class="section-btn" data-modal="tools-testing">
+            <svg stroke="var(--tools)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M7 7h10v10H7z"/>
+            </svg>
+            <span>JUnit, Assertions & Test Structure</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     ADVANCED PAGE
+     =========================== -->
+<section id="advanced" class="page">
+    <div class="banner">
+        <svg stroke="var(--advanced)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <div>
+            <div class="banner-title">Advanced Java</div>
+            <div class="banner-sub">Files, threads, streams, patterns, clean code.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="advanced-files">
+            <svg stroke="var(--advanced)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M7 5h10v14H7z"/>
+            </svg>
+            <span>Files, Paths & I/O</span>
+        </div>
+
+        <div class="section-btn" data-modal="advanced-threads">
+            <svg stroke="var(--advanced)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 8h12M6 12h12M6 16h12"/>
+            </svg>
+            <span>Threads, Executors & Concurrency</span>
+        </div>
+
+        <div class="section-btn" data-modal="advanced-streams">
+            <svg stroke="var(--advanced)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M5 9h14M5 15h10"/>
+            </svg>
+            <span>Streams, Lambdas & Patterns</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     CHEAT SHEETS PAGE
+     =========================== -->
+<section id="cheats" class="page">
+    <div class="banner">
+        <svg stroke="var(--cheats)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M5 7h14M5 12h10M5 17h7"/>
+        </svg>
+        <div>
+            <div class="banner-title">Cheat Sheets</div>
+            <div class="banner-sub">Quick syntax, shortcuts, and copy‑paste snippets.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="cheats-syntax">
+            <svg stroke="var(--cheats)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 6h12M6 12h8M6 18h4"/>
+            </svg>
+            <span>Core Syntax Cheat Sheet</span>
+        </div>
+
+        <div class="section-btn" data-modal="cheats-vscode">
+            <svg stroke="var(--cheats)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M6 6l12 6-12 6z"/>
+            </svg>
+            <span>VS Code Shortcuts & Commands</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     INTERVIEW PAGE
+     =========================== -->
+<section id="interview" class="page">
+    <div class="banner">
+        <svg stroke="var(--interview)" fill="none" viewBox="0 0 24 24">
+            <path stroke-width="2" d="M6 6h12v12H6z"/>
+        </svg>
+        <div>
+            <div class="banner-title">Interview Questions</div>
+            <div class="banner-sub">Concept questions, code questions, and discussion prompts.</div>
+        </div>
+    </div>
+
+    <div class="section-list">
+        <div class="section-btn" data-modal="interview-core">
+            <svg stroke="var(--interview)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span>Core Java Interview Questions</span>
+        </div>
+
+        <div class="section-btn" data-modal="interview-oop">
+            <svg stroke="var(--interview)" fill="none" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M8 7h8v4H8zM6 15h5v4H6zM13 15h5v4h-5z"/>
+            </svg>
+            <span>OOP & Design Interview Questions</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================
+     MODAL OVERLAY
+     =========================== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <button class="modal-back" id="modalBack">
+                <svg stroke="var(--text-soft)" fill="none" viewBox="0 0 24 24">
+                    <path stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span>Back</span>
+            </button>
+            <div class="modal-title" id="modalTitle">Title</div>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<!-- ===========================
+     TEMPLATE CONTAINER
+     =========================== -->
+<div id="templates" style="display:none;">
+
+<!-- All modal templates will be inserted here in PART 2 -->
+
+</div>
+<!-- ===========================
+     PART 2 — MODAL TEMPLATES
+     =========================== -->
+
+<!-- ===========================
+     HOME — OVERVIEW
+     =========================== -->
+<template id="modal-home-overview">
+    <h2>Welcome to Your Java + VS Code Knowledge Center</h2>
+
+    <div class="callout note">
+        This site is your personal Java + VS Code brain. Clean pages, deep modals, fast navigation.
+    </div>
+
+    <div class="toc">
+        <a href="#structure">• How This Site Works</a><br>
+        <a href="#philosophy">• Documentation Philosophy</a><br>
+        <a href="#usage">• How to Use This Effectively</a>
+    </div>
+
+    <h3 id="structure">How This Site Works</h3>
+    <p>
+        Each page contains topic‑specific buttons.  
+        Each button opens a full‑screen modal with dense, structured documentation.
+    </p>
+
+    <ul>
+        <li>Home — overview, roadmap</li>
+        <li>Basics — variables, types, control flow</li>
+        <li>Syntax — methods, classes, collections</li>
+        <li>OOP — encapsulation, inheritance, polymorphism</li>
+        <li>Debug — breakpoints, stepping, exceptions</li>
+        <li>Tools — VS Code, Maven, testing</li>
+        <li>Advanced — files, threads, streams</li>
+        <li>Cheat Sheets — quick syntax + shortcuts</li>
+        <li>Interview — concept + code questions</li>
+    </ul>
+
+    <h3 id="philosophy">Documentation Philosophy</h3>
+    <div class="callout tip">
+        “Programs must be written for people to read, and only incidentally for machines to execute.” — Harold Abelson
+    </div>
+
+    <p>
+        This site follows a strict documentation style:
+    </p>
+
+    <ul>
+        <li><strong>S1 Style:</strong> clean, modern, minimal</li>
+        <li><strong>C2 Callouts:</strong> clear, structured, color‑coded</li>
+        <li><strong>D3 Density:</strong> high‑value information per scroll</li>
+    </ul>
+
+    <h3 id="usage">How to Use This Effectively</h3>
+    <ol>
+        <li>Pick the page that matches your topic.</li>
+        <li>Tap a button to open a modal.</li>
+        <li>Read, scroll, copy, paste, learn.</li>
+        <li>Use this like a reference book + cheat sheet + tutorial.</li>
+    </ol>
+
+    <hr>
+
+    <div class="callout tip">
+        This is your personal Java encyclopedia — built for speed, clarity, and mastery.
+    </div>
+</template>
+
+<!-- ===========================
+     HOME — ROADMAP
+     =========================== -->
+<template id="modal-home-roadmap">
+    <h2>Java Learning Roadmap</h2>
+
+    <div class="toc">
+        <a href="#beginner">• Beginner</a><br>
+        <a href="#intermediate">• Intermediate</a><br>
+        <a href="#advanced">• Advanced</a>
+    </div>
+
+    <h3 id="beginner">Beginner (Weeks 1–4)</h3>
+    <ul>
+        <li>What Java is</li>
+        <li>Variables, types, operators</li>
+        <li>If/else, loops, switch</li>
+        <li>Methods & parameters</li>
+        <li>Basic classes & objects</li>
+    </ul>
+
+    <h3 id="intermediate">Intermediate (Weeks 4–10)</h3>
+    <ul>
+        <li>Constructors</li>
+        <li>Encapsulation</li>
+        <li>Inheritance</li>
+        <li>Polymorphism</li>
+        <li>Interfaces & abstract classes</li>
+        <li>Collections & generics</li>
+        <li>Streams & lambdas</li>
+    </ul>
+
+    <h3 id="advanced">Advanced (Weeks 10+)</h3>
+    <ul>
+        <li>Files & I/O</li>
+        <li>Threads & concurrency</li>
+        <li>Design patterns</li>
+        <li>Testing & debugging</li>
+        <li>Clean code principles</li>
+    </ul>
+
+    <div class="callout tip">
+        Follow this roadmap and you will reach full Java fluency.
+    </div>
+</template>
+
+<!-- ===========================
+     BASICS — WHAT IS JAVA
+     =========================== -->
+<template id="modal-basics-what-is-java">
+    <h2>What Java Is & How It Runs</h2>
+
+    <div class="callout note">
+        Java is a compiled, object‑oriented, platform‑independent language.
+    </div>
+
+    <h3>Key Concepts</h3>
+    <ul>
+        <li><strong>Compiled →</strong> Java code becomes bytecode</li>
+        <li><strong>Runs on JVM →</strong> Java Virtual Machine executes bytecode</li>
+        <li><strong>Platform‑independent →</strong> “Write once, run anywhere”</li>
+    </ul>
+
+    <h3>Java Execution Flow</h3>
+    <pre><code>
+// YourCode.java → javac → YourCode.class → JVM → Program runs
+    </code></pre>
+
+    <div class="callout tip">
+        The JVM is the secret weapon — it makes Java portable, safe, and optimized.
+    </div>
+</template>
+
+<!-- ===========================
+     BASICS — VARIABLES
+     =========================== -->
+<template id="modal-basics-variables">
+    <h2>Variables, Types & Operators</h2>
+
+    <h3>Primitive Types</h3>
+    <ul>
+        <li>int — whole numbers</li>
+        <li>double — decimals</li>
+        <li>boolean — true/false</li>
+        <li>char — single characters</li>
+    </ul>
+
+    <h3>Reference Types</h3>
+    <ul>
+        <li>String</li>
+        <li>Arrays</li>
+        <li>Objects</li>
+    </ul>
+
+    <h3>Example</h3>
+    <pre><code>
+int age = 17;
+double gpa = 3.8;
+boolean isStudent = true;
+String name = "Kenneth";
+    </code></pre>
+
+    <div class="callout tip">
+        Prefer descriptive variable names — clarity beats cleverness.
+    </div>
+</template>
+
+<!-- ===========================
+     BASICS — CONTROL FLOW
+     =========================== -->
+<template id="modal-basics-control-flow">
+    <h2>If, Else, Switch & Loops</h2>
+
+    <h3>If / Else</h3>
+    <pre><code>
+if (age >= 18) {
+    System.out.println("Adult");
+} else {
+    System.out.println("Minor");
+}
+    </code></pre>
+
+    <h3>Switch</h3>
+    <pre><code>
+switch (grade) {
+    case "A": System.out.println("Great!"); break;
+    case "B": System.out.println("Good"); break;
+    default: System.out.println("Keep going!");
+}
+    </code></pre>
+
+    <h3>Loops</h3>
+    <pre><code>
+for (int i = 0; i < 5; i++) {
+    System.out.println(i);
+}
+    </code></pre>
+</template>
+
+<!-- ===========================
+     SYNTAX — METHODS
+     =========================== -->
+<template id="modal-syntax-methods">
+    <h2>Methods & Parameters</h2>
+
+    <h3>Basic Method</h3>
+    <pre><code>
+void greet(String name) {
+    System.out.println("Hello " + name);
+}
+    </code></pre>
+
+    <h3>Return Values</h3>
+    <pre><code>
+int add(int a, int b) {
+    return a + b;
+}
+    </code></pre>
+
+    <div class="callout tip">
+        Methods should do one thing — and do it well.
+    </div>
+</template>
+
+<!-- ===========================
+     SYNTAX — CLASSES
+     =========================== -->
+<template id="modal-syntax-classes">
+    <h2>Classes, Constructors & Objects</h2>
+
+    <h3>Example Class</h3>
+    <pre><code>
+class Person {
+    String name;
+    int age;
+
+    Person(String n, int a) {
+        name = n;
+        age = a;
+    }
+}
+    </code></pre>
+
+    <h3>Creating Objects</h3>
+    <pre><code>
+Person p = new Person("Kenneth", 17);
+    </code></pre>
+</template>
+
+<!-- ===========================
+     SYNTAX — COLLECTIONS
+     =========================== -->
+<template id="modal-syntax-collections">
+    <h2>Collections, Generics & Streams</h2>
+
+    <h3>List Example</h3>
+    <pre><code>
+List<String> names = new ArrayList<>();
+names.add("Ken");
+names.add("Alex");
+    </code></pre>
+
+    <h3>Stream Example</h3>
+    <pre><code>
+names.stream()
+     .filter(n -> n.startsWith("K"))
+     .forEach(System.out::println);
+    </code></pre>
+</template>
+
+<!-- ===========================
+     OOP — ENCAPSULATION
+     =========================== -->
+<template id="modal-oop-encapsulation">
+    <h2>Encapsulation & Access Modifiers</h2>
+
+    <pre><code>
+class BankAccount {
+    private double balance;
+
+    public void deposit(double amount) {
+        balance += amount;
+    }
+}
+    </code></pre>
+
+    <div class="callout tip">
+        Keep fields private — expose behavior, not data.
+    </div>
+</template>
+
+<!-- ===========================
+     OOP — INHERITANCE
+     =========================== -->
+<template id="modal-oop-inheritance">
+    <h2>Inheritance & Class Hierarchies</h2>
+
+    <pre><code>
+class Animal { void speak() {} }
+class Dog extends Animal { void speak() { System.out.println("Woof"); } }
+    </code></pre>
+</template>
+
+<!-- ===========================
+     OOP — POLYMORPHISM
+     =========================== -->
+<template id="modal-oop-polymorphism">
+    <h2>Polymorphism, Interfaces & Abstract Classes</h2>
+
+    <pre><code>
+interface Shape { double area(); }
+
+class Circle implements Shape {
+    double r;
+    Circle(double r) { this.r = r; }
+    public double area() { return Math.PI * r * r; }
+}
+    </code></pre>
+</template>
+
+<!-- ===========================
+     DEBUG — BREAKPOINTS
+     =========================== -->
+<template id="modal-debug-breakpoints">
+    <h2>Breakpoints, Stepping & Watches</h2>
+
+    <ul>
+        <li>Set breakpoints with the red dot</li>
+        <li>Use Step Over / Into / Out</li>
+        <li>Watch variables live</li>
+        <li>Inspect call stack</li>
+    </ul>
+</template>
+
+<!-- ===========================
+     DEBUG — EXCEPTIONS
+     =========================== -->
+<template id="modal-debug-exceptions">
+    <h2>Exceptions, Stack Traces & Error Patterns</h2>
+
+    <pre><code>
+try {
+    risky();
+} catch (Exception e) {
+    e.printStackTrace();
+}
+    </code></pre>
+
+    <div class="callout warning">
+        Always read the FIRST line of a stack trace — it tells you the real cause.
+    </div>
+</template>
+
+<!-- ===========================
+     TOOLS — VS CODE
+     =========================== -->
+<template id="modal-tools-vscode">
+    <h2>VS Code Setup & Workflow</h2>
+
+    <ul>
+        <li>Install Java Extension Pack</li>
+        <li>Use Run/Debug sidebar</li>
+        <li>Use integrated terminal</li>
+        <li>Use code actions (lightbulb)</li>
+    </ul>
+</template>
+
+<!-- ===========================
+     TOOLS — MAVEN
+     =========================== -->
+<template id="modal-tools-maven">
+    <h2>Maven & Gradle Basics</h2>
+
+    <pre><code>
+mvn compile
+mvn package
+mvn test
+    </code></pre>
+</template>
+
+<!-- ===========================
+     TOOLS — TESTING
+     =========================== -->
+<template id="modal-tools-testing">
+    <h2>JUnit, Assertions & Test Structure</h2>
+
+    <pre><code>
+@Test
+void testAdd() {
+    assertEquals(4, add(2,2));
+}
+    </code></pre>
+</template>
+
+<!-- ===========================
+     ADVANCED — FILES
+     =========================== -->
+<template id="modal-advanced-files">
+    <h2>Files, Paths & I/O</h2>
+
+    <pre><code>
+Files.writeString(Path.of("data.txt"), "Hello");
+String text = Files.readString(Path.of("data.txt"));
+    </code></pre>
+</template>
+
+<!-- ===========================
+     ADVANCED — THREADS
+     =========================== -->
+<template id="modal-advanced-threads">
+    <h2>Threads, Executors & Concurrency</h2>
+
+    <pre><code>
+Thread t = new Thread(() -> {
+    System.out.println("Running...");
+});
+t.start();
+    </code></pre>
+</template>
+
+<!-- ===========================
+     ADVANCED — STREAMS
+     =========================== -->
+<template id="modal-advanced-streams">
+    <h2>Streams, Lambdas & Patterns</h2>
+
+    <pre><code>
+List<Integer> nums = List.of(1,2,3,4);
+
+nums.stream()
+    .map(n -> n * 2)
+    .forEach(System.out::println);
+    </code></pre>
+</template>
+
+<!-- ===========================
+     CHEATS — SYNTAX
+     =========================== -->
+<template id="modal-cheats-syntax">
+    <h2>Core Syntax Cheat Sheet</h2>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello");
+    }
+}
+    </code></pre>
+</template>
+
+<!-- ===========================
+     CHEATS — VS CODE
+     =========================== -->
+<template id="modal-cheats-vscode">
+    <h2>VS Code Shortcuts</h2>
+
+    <ul>
+        <li>Ctrl + Shift + P — Command Palette</li>
+        <li>Ctrl + B — Toggle Sidebar</li>
+        <li>Ctrl + ` — Terminal</li>
+    </ul>
+</template>
+
+<!-- ===========================
+     INTERVIEW — CORE
+     =========================== -->
+<template id="modal-interview-core">
+    <h2>Core Java Interview Questions</h2>
+
+    <ul>
+        <li>What is the JVM?</li>
+        <li>Difference between == and .equals?</li>
+        <li>What is a constructor?</li>
+        <li>What is polymorphism?</li>
+    </ul>
+</template>
+
+<!-- ===========================
+     INTERVIEW — OOP
+     =========================== -->
+<template id="modal-interview-oop">
+    <h2>OOP & Design Interview Questions</h2>
+
+    <ul>
+        <li>Explain encapsulation</li>
+        <li>Explain inheritance</li>
+        <li>Explain abstraction</li>
+        <li>Explain interfaces</li>
+    </ul>
+</template>
+<!-- ===========================
+     PART 3 — JAVASCRIPT
+     =========================== -->
+<script>
+// ===============================
+// PAGE SWITCHING
+// ===============================
+const navButtons = document.querySelectorAll("nav button");
+const pages = document.querySelectorAll(".page");
+
+navButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        const target = btn.dataset.page;
+
+        // Update active nav button
+        navButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // Switch pages
+        pages.forEach(p => {
+            if (p.id === target) {
+                p.classList.add("active");
+            } else {
+                p.classList.remove("active");
+            }
+        });
+    });
+});
+
+// ===============================
+// MODAL SYSTEM
+// ===============================
+const modalOverlay = document.getElementById("modalOverlay");
+const modalBody = document.getElementById("modalBody");
+const modalTitle = document.getElementById("modalTitle");
+const modalBack = document.getElementById("modalBack");
+
+document.querySelectorAll(".section-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const modalId = btn.dataset.modal;
+        const template = document.getElementById(`modal-${modalId}`);
+
+        if (!template) {
+            modalBody.innerHTML = "<p>Content not found.</p>";
+            modalTitle.textContent = "Error";
+        } else {
+            modalBody.innerHTML = template.innerHTML;
+            modalTitle.textContent = btn.innerText.trim();
+        }
+
+        modalOverlay.classList.add("active");
+    });
+});
+
+// Close modal
+modalBack.addEventListener("click", () => {
+    modalOverlay.classList.remove("active");
+});
+</script>
+
+</body>
+</html>
