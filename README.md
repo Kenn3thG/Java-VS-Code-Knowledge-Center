@@ -64,7 +64,8 @@ This project solves that by giving learners a **single, clean, structured place*
 4. Read the modal  
 5. Copy/paste examples into your Java project  
 6. Learn at your own pace
-   Or use this link! https://kenn3thg.github.io/Java-VS-Code-Knowledge-Center/
+
+Or use this link! https://kenn3thg.github.io/Java-VS-Code-Knowledge-Center/
 
 No installation. No setup. No configuration.
 
